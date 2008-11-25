@@ -1,4 +1,4 @@
-package net.sf.wcr.forms;
+package net.sf.wcr.forms.misc;
 
 import java.io.IOException;
 import javax.microedition.lcdui.Form;
@@ -26,7 +26,7 @@ public class SplashScreen extends Form implements Runnable
     {
         super("Welcome to WCR");
         
-        this.loading_time = 2000;
+        this.loading_time = 20;
         this.wcr = wcr;
         this.img_path = "/net/sf/wcr/media/files/";
         

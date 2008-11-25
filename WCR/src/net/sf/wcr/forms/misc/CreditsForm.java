@@ -1,4 +1,4 @@
-package net.sf.wcr.forms;
+package net.sf.wcr.forms.misc;
 
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -29,7 +29,7 @@ public class CreditsForm extends Form implements CommandListener
         this.wcr = wcr;
         this.back = new Command("Back", Command.BACK, 0);
         
-        append("This game has beed developed for a Wireless Network course " +
+        append("This game has been developed for a Wireless Network course " +
                "at the University of Padua, Italy.");
         append("\n");
         append(new StringItem("Author", "Burattin Andrea, Ferro Riccardo"));

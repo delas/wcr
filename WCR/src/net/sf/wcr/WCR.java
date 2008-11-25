@@ -16,41 +16,36 @@ import javax.microedition.media.control.VideoControl;
 import net.sf.wcr.bluetooth.ClientThread;
 import net.sf.wcr.bluetooth.ServerThread;
 import net.sf.wcr.core.GameMode;
-import net.sf.wcr.forms.CreditsForm;
-import net.sf.wcr.forms.FindDeviceForm;
-import net.sf.wcr.forms.MainMenuForm;
-import net.sf.wcr.forms.SelectColorForm;
-import net.sf.wcr.forms.SplashScreen;
-import net.sf.wcr.media.capturing.ClientCapture;
-import net.sf.wcr.media.Color;
-import net.sf.wcr.media.capturing.ServerCapture;
-import net.sf.wcr.media.capturing.Video;
-import net.sf.wcr.media.VideoCanvas;
-import net.sf.wcr.media.capturing.SinglePlayerCapture;
+import net.sf.wcr.forms.capture.ClientCaptureForm;
+import net.sf.wcr.forms.capture.ServerCaptureForm;
+import net.sf.wcr.forms.capture.SinglePlayerCaptureForm;
+import net.sf.wcr.forms.misc.CreditsForm;
+import net.sf.wcr.forms.menu.DeviceListForm;
+import net.sf.wcr.forms.menu.FindDeviceForm;
+import net.sf.wcr.forms.menu.MainMenuForm;
+import net.sf.wcr.forms.menu.SelectColorForm;
+import net.sf.wcr.forms.misc.SplashScreen;
 
-public class WCR extends MIDlet implements CommandListener, DiscoveryListener
+public class WCR extends MIDlet implements DiscoveryListener
 {
 
     public Display display;
-    public Command back, exit, singlePlayerCapture, clientCapture, serverCapture;
-    public Player player;
-    public VideoControl videoControl;
-    public Video video;
     public UUID uuid;
 
     /* all the various application form */
     SplashScreen ss;
     MainMenuForm mmf;
     FindDeviceForm fdf;
-    SelectColorForm scf;
     CreditsForm cf;
-    
-    private List dev_list;          /**< The devices list */
+    SinglePlayerCaptureForm spcf;
 
     private Vector devices;
     private LocalDevice local;
     private DiscoveryAgent agent;
 
+    private static Player player;
+    private static boolean player_inited = false;
+    private static VideoControl video_control;
     private ClientThread ct;
     private ServerThread st;
     private GameMode gameMode;
@@ -58,12 +53,6 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
 
     public WCR()
     {
-	back = new Command("Back", Command.BACK, 0);
-	exit = new Command("Exit", Command.EXIT, 0);
-	singlePlayerCapture = new Command("Capture", Command.SCREEN, 1);
-        clientCapture = new Command("Capture", Command.SCREEN, 1);
-        serverCapture = new Command("Capture", Command.SCREEN, 1);
-
         uuid = new UUID("1a310b97237f81937", false);
     }
 
@@ -116,55 +105,6 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
 
 
 
-    /*
-     * =========================================================================
-     * CommandListener methods
-     * =========================================================================
-     */
-    public void commandAction(Command c, Displayable s)
-    {
-	try
-	{
-	    if (c == exit)
-	    {
-		destroyApp(false);
-		notifyDestroyed();
-	    }
-	    else if (c == back)
-	    {
-//		display.setCurrent(main_list);
-	    }
-	    else if (c == singlePlayerCapture)
-	    {
-		new SinglePlayerCapture(this).start();
-	    }
-            else if (c == clientCapture)
-            {
-                new ClientCapture(this, ct).start();
-            }
-            else if (c == serverCapture)
-            {
-                new ServerCapture(this, st).start();
-            }
-	    else if (c == List.SELECT_COMMAND)
-	    {
-		if (s == dev_list)
-		{
-		    //select triggered from the device list
-		    if (dev_list.getSelectedIndex() >= 0)
-		    {
-			ct = new ClientThread(this, (RemoteDevice)devices.elementAt(dev_list.getSelectedIndex()));
-		    }
-		}
-	    }
-	}
-	catch(BluetoothStateException e)
-	{
-	    e.printStackTrace();
-	}
-    }
-
-
 
     /*
      * =========================================================================
@@ -179,7 +119,7 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
             if(true)
             {
                 devices.addElement(remoteDevice);
-                do_alert("New device found!", 1000);
+                do_alert("New device found!", 500);
             }
         }
         //catch(BluetoothStateException e)
@@ -198,19 +138,7 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
 	{
 	    case DiscoveryListener.INQUIRY_COMPLETED:   
                 /* Inquiry completed normally */
-		for (int x = 0; x < devices.size(); x++)
-		{
-		    try
-		    {
-			String device_name = ((RemoteDevice) devices.elementAt(x)).getFriendlyName(false) + " - " + ((RemoteDevice) devices.elementAt(x)).getBluetoothAddress();
-			this.dev_list.append(device_name, null);
-			display.setCurrent(dev_list);
-		    }
-		    catch (Exception e)
-		    {
-			do_alert("Error in adding devices", 4000);
-		    }
-		}
+		showDeviceList();
 		break;
 	    case DiscoveryListener.INQUIRY_ERROR:
                 /* Error during inquiry */
@@ -282,86 +210,37 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
 	}
     }
 
+    /**
+     * This is the method that shows the form with all the present devices
+     */
+    public void showDeviceList()
+    {
+        display.setCurrent(new DeviceListForm(this));
+    }
+    
+    /**
+     * This is the method invoked when a single player game session is starting
+     * 
+     * @param gameColor the current game color
+     */
     public void showSinglePlayerCamera(int gameColor)
     {
-	try
-	{
-	    player = getCamera();
-            if (player == null)
-            {
-                throw new Exception("Can't start up camera!");
-            }
-	    player.realize();
-
-	    videoControl = (VideoControl) player.getControl("VideoControl");
-	    Canvas canvas = new VideoCanvas(this, videoControl, gameColor);
-	    canvas.addCommand(singlePlayerCapture);
-	    canvas.setCommandListener(this);
-	    display.setCurrent(canvas);
-	    player.start();
-	}
-	catch (Exception e)
-	{
-	    e.printStackTrace();
-	}
+        display.setCurrent(new SinglePlayerCaptureForm(this, gameColor));
     }
 
     public void showClientCamera(int gameColor)
     {
-	try
-	{
-	    player = getCamera();
-            if (player == null)
-            {
-                throw new Exception("Can't start up camera!");
-            }
-	    player.realize();
-
-	    videoControl = (VideoControl) player.getControl("VideoControl");
-	    Canvas canvas = new VideoCanvas(this, videoControl, gameColor);
-	    canvas.addCommand(clientCapture);
-            canvas.addCommand(back);
-	    canvas.setCommandListener(this);
-	    display.setCurrent(canvas);
-	    player.start();
-	}
-	catch (Exception e)
-	{
-	    e.printStackTrace();
-	}
+        display.setCurrent(new ClientCaptureForm(this, gameColor));
     }
 
     public void showServerCamera(int gameColor)
     {
-	try
-	{
-	    player = getCamera();
-            if (player == null)
-            {
-                throw new Exception("Can't start up camera!");
-            }
-	    player.realize();
-
-	    videoControl = (VideoControl) player.getControl("VideoControl");
-	    Canvas canvas = new VideoCanvas(this, videoControl, gameColor);
-	    canvas.addCommand(serverCapture);
-	    canvas.setCommandListener(this);
-	    display.setCurrent(canvas);
-	    player.start();
-	}
-	catch (Exception e)
-	{
-	    e.printStackTrace();
-	}
+        display.setCurrent(new ServerCaptureForm(this, gameColor));
     }
 
     public void selectGameColor()
     {
-        if (scf == null)
-        {
-            scf = new SelectColorForm(this);
-        }
-        display.setCurrent(scf);
+        display.setCurrent(new SelectColorForm(this));
     }
 
     public void do_alert(String msg, int time_out)
@@ -405,24 +284,63 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
         return local;
     }
 
-    private static final Player getCamera()
+    public static final Player getCamera()
     {
-        try
-        {
-            return Manager.createPlayer("capture://image");
-        }
-        catch (Exception ex1)
+//        if (player == null)
+//        {
+            try
+            {
+                return Manager.createPlayer("capture://image");
+//                player = Manager.createPlayer("capture://image");
+            }
+            catch (Exception ex1)
+            {
+                try
+                {
+                    return Manager.createPlayer("capture://video");
+//                    player = Manager.createPlayer("capture://video");
+                }
+                catch (Exception ex2)
+                {
+                    System.out.println("Get camera device failed!");
+                    return null;
+//                    player = null;
+                }
+            }
+//        }
+//        return player;
+    }
+    
+    public static final VideoControl getVideoControl()
+    {
+        Player p = getCamera();
+        if (p != null)
         {
             try
             {
-                return Manager.createPlayer("capture://video");
+                if (video_control == null)
+                {
+                    p.prefetch();
+                    p.realize();
+                    video_control = (VideoControl)p.getControl("VideoControl");
+                }
             }
-            catch (Exception ex2)
+            catch(Exception e)
             {
-                System.out.println("Get camera device failed!");
-                return null;
+                e.printStackTrace();
             }
         }
+        return video_control;
+    }
+    
+    public static boolean playerInited()
+    {
+        return player_inited;
+    }
+    
+    public static void playerInited(boolean pi)
+    {
+        player_inited = pi;
     }
     
     public void gameMode(GameMode gm)
@@ -438,5 +356,25 @@ public class WCR extends MIDlet implements CommandListener, DiscoveryListener
     public void ServerThread(ServerThread st)
     {
         this.st = st;
+    }
+    
+    public ServerThread ServerThread()
+    {
+        return this.st;
+    }
+    
+    public void ClientThread(ClientThread ct)
+    {
+        this.ct = ct;
+    }
+    
+    public ClientThread ClientThread()
+    {
+        return this.ct;
+    }
+    
+    public Vector getAllDevices()
+    {
+        return this.devices;
     }
 }
