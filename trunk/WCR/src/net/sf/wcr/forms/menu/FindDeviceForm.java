@@ -1,4 +1,4 @@
-package net.sf.wcr.forms;
+package net.sf.wcr.forms.menu;
 
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -28,7 +28,7 @@ public class FindDeviceForm extends Form implements CommandListener
         
         this.wcr = wcr;
         this.abort = new Command("Abort", Command.STOP, 0);
-        this.gauge = new Gauge("Searching devices...", false, Gauge.INDEFINITE,
+        this.gauge = new Gauge("Devices searching...", false, Gauge.INDEFINITE,
                           Gauge.CONTINUOUS_RUNNING);
         
         append(gauge);

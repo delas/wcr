@@ -1,4 +1,4 @@
-package net.sf.wcr.forms;
+package net.sf.wcr.forms.menu;
 
 import java.io.IOException;
 import javax.microedition.lcdui.Choice;

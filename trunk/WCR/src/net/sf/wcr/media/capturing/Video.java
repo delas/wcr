@@ -1,15 +1,18 @@
-package net.sf.wcr.media.capturing;
+package net.sf.wcr.media;
 
 import javax.microedition.media.MediaException;
+import javax.microedition.media.Player;
 import net.sf.wcr.WCR;
 
 public abstract class Video extends Thread
 {
-    WCR midlet;
+    protected WCR midlet;
+    protected Player player;
     
-    public Video(WCR midlet)
+    public Video(WCR midlet, Player player)
     {
 	this.midlet = midlet;
+        this.player = player;
     }
     
     protected abstract void exec() throws MediaException;

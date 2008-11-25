@@ -1,4 +1,4 @@
-package net.sf.wcr.forms;
+package net.sf.wcr.forms.menu;
 
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.Command;
