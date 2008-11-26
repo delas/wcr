@@ -229,13 +229,13 @@ public class Color
             imgHsv[i] = rgb2hsv(r,g,b);
 
             /* it's black */
-            if (imgHsv[i][V_INDEX] < 50)
+            if (imgHsv[i][V_INDEX] < 65)
             {
                 palette[BLACK_INDEX]++;
                 continue;
             }
             /* it's white */
-            if (imgHsv[i][S_INDEX] < 25 && imgHsv[i][V_INDEX] > 50)
+            if (imgHsv[i][S_INDEX] < 15 && imgHsv[i][V_INDEX] > 60)
             {
                 palette[WHITE_INDEX]++;
                 continue;

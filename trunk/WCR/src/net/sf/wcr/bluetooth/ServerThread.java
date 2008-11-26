@@ -5,10 +5,10 @@ import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
-import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Gauge;
 import net.sf.wcr.WCR;
+import net.sf.wcr.forms.misc.LoserForm;
 import net.sf.wcr.media.Color;
 
 /**
@@ -35,7 +35,7 @@ public class ServerThread extends NetThread
         return gameColor;
     }
 
-    public void run()
+    public void exec()
     {
         Packet p;
 	try
@@ -45,7 +45,9 @@ public class ServerThread extends NetThread
 	    {
 		System.out.println("Impossible set to discoverable");
 	    }
-	    notifier = (StreamConnectionNotifier)Connector.open("btspp://localhost:" + parent.uuid);
+            String connStr = "btspp://localhost:1;master=false;encrypt=false;authenticate=false";
+//	    notifier = (StreamConnectionNotifier)Connector.open("btspp://localhost:" + parent.uuid);
+            notifier = (StreamConnectionNotifier)Connector.open(connStr);
             
             Form f = new Form("Server activated");
 	    f.append(new Gauge("Server activated, waiting for device...", false,
@@ -55,14 +57,23 @@ public class ServerThread extends NetThread
             /* accept the incoming connection */
 	    conn(notifier.acceptAndOpen());
             
+                parent.do_alert("got!", 1000);
+                Thread.sleep(1000);
+                
             /* create a welcome packet */
             p = new Packet("WELCOME", Color.getColorName(gameColor));
             
             /* send the welcome packet */
             p.submit(out());
             
+                parent.do_alert("welcome send!", 1000);
+                Thread.sleep(1000);
+            
             /* read the response packet */
             p = read();
+            
+                parent.do_alert("response received!", 1000);
+                Thread.sleep(1000);
 
             if (p.getCommand().equals("WANNAPLAY"))
             {
@@ -85,10 +96,9 @@ public class ServerThread extends NetThread
     private void waitToLose() throws IOException
     {
         Packet lost = read();
-        System.out.println(lost.getCommand());
         if (lost.getCommand().equals("YOULOSE"))
         {
-            parent.do_alert(lost.getCommand(), Alert.FOREVER);
+            parent.display.setCurrent(new LoserForm(parent));
         }
 
         close();

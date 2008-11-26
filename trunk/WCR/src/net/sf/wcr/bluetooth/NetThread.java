@@ -7,6 +7,7 @@ import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.LocalDevice;
 import javax.microedition.io.StreamConnection;
 import net.sf.wcr.WCR;
+import net.sf.wcr.forms.misc.ConnectionLostForm;
 
 /**
  * This abstract class is a prototype for all the network operations. It is
@@ -16,7 +17,7 @@ import net.sf.wcr.WCR;
  *
  * @author Andrea Burattin
  */
-abstract public class NetThread implements Runnable
+abstract public class NetThread extends Thread
 {
     protected WCR parent;
     private StreamConnection conn;
@@ -35,14 +36,24 @@ abstract public class NetThread implements Runnable
     {
 	this.parent = p;
         local = LocalDevice.getLocalDevice();
-	Thread t = new Thread(this);
-	t.start();
+    }
+    
+    public void run()
+    {
+        try
+        {
+            exec();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
      * The only abstract method, the thread main flow
      */
-    abstract public void run();
+    abstract public void exec();
     
     /**
      * This method to get an output stream object for current connection
@@ -118,6 +129,7 @@ abstract public class NetThread implements Runnable
 	catch (IOException e)
 	{
 	    e.printStackTrace();
+            parent.display.setCurrent(new ConnectionLostForm(parent));
 	}
     }
 

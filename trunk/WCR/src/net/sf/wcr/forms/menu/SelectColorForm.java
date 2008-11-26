@@ -66,7 +66,9 @@ public class SelectColorForm extends List implements CommandListener
 
                     if (wcr.gameMode().equals(GameMode.CREATE_GAME))
                     {
-                        wcr.ServerThread(new ServerThread(wcr, gameColor));
+                        ServerThread st = new ServerThread(wcr, gameColor);
+                        wcr.ServerThread(st);
+                        wcr.ServerThread().start();
                     }
                     else if (wcr.gameMode().equals(GameMode.SINGLE_PLAYER))
                     {

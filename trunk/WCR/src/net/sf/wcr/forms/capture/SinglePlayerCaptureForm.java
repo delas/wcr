@@ -3,9 +3,6 @@ package net.sf.wcr.forms.capture;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.media.MediaException;
-import javax.microedition.media.Player;
-import javax.microedition.media.control.VideoControl;
 import net.sf.wcr.WCR;
 import net.sf.wcr.media.VideoCanvas;
 import net.sf.wcr.media.capturing.SinglePlayerCapture;
@@ -56,11 +53,12 @@ public class SinglePlayerCaptureForm extends VideoCanvas implements CommandListe
     {
         if (c == back)
         {
+            player.close();
             wcr.mainMenu();
         }
         else if (c == shoot)
         {
-            new SinglePlayerCapture(wcr, player).start();
+            new SinglePlayerCapture(wcr, player, gameColor).start();
         }
     }
 }

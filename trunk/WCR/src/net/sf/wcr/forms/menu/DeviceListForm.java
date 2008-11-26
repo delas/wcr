@@ -83,6 +83,7 @@ public class DeviceListForm extends List implements CommandListener
                 {
                     ClientThread ct = new ClientThread(wcr, (RemoteDevice)devices.elementAt(getSelectedIndex()));
                     wcr.ClientThread(ct);
+                    wcr.ClientThread().start();
                 }
             }
             catch(BluetoothStateException e)
