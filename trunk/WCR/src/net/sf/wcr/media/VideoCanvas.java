@@ -6,6 +6,12 @@ import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 import net.sf.wcr.WCR;
 
+/**
+ * This is the VideoCanvas class, responsible of the representation of the
+ * camera output
+ * 
+ * @author Andrea Burattin
+ */
 public class VideoCanvas extends Canvas
 {
     private WCR midlet;
@@ -13,6 +19,12 @@ public class VideoCanvas extends Canvas
     private VideoControl video_control;
     private int gameColor;
 
+    /**
+     * Video canvas constructor
+     * 
+     * @param midlet the video canvas owner
+     * @param gameColor the current game color
+     */
     public VideoCanvas(WCR midlet, int gameColor)
     {
         int width = getWidth();
@@ -40,6 +52,12 @@ public class VideoCanvas extends Canvas
         }
     }
 
+    /**
+     * Renders the Canvas. The application must implement this method in order
+     * to paint any graphics. 
+     * 
+     * @param g the Graphics object to be used for rendering the Canvas
+     */
     public void paint(Graphics g)
     {
         /* draw the background */

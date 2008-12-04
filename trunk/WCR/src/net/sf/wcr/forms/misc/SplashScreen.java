@@ -4,6 +4,7 @@ import java.io.IOException;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.ImageItem;
+import javax.microedition.lcdui.StringItem;
 import net.sf.wcr.WCR;
 
 /**
@@ -27,7 +28,7 @@ public class SplashScreen extends Form implements Runnable
     {
         super("Welcome to WCR");
 
-        this.loading_time = 2000;
+        this.loading_time = 2500;
         this.wcr = wcr;
         this.img_path = "/net/sf/wcr/media/files/splash/";
 
@@ -38,7 +39,9 @@ public class SplashScreen extends Form implements Runnable
                     Image.createImage(img_path + "wcr.png"),
                     ImageItem.LAYOUT_CENTER | ImageItem.LAYOUT_VCENTER,
                     "");
+            StringItem str = new StringItem("Welcome", "to WCR");
             append(img);
+            append(str);
 
             Thread t = new Thread(this);
             t.start();

@@ -36,7 +36,7 @@ public class CreditsForm extends Form implements CommandListener
         append(new StringItem("Current version", "1.0"));
         append(new StringItem("Release date", "19 dec 2008"));
         append("\n");
-        append("This code is licenced under the term of GNU GPL licence.");
+        append("This code is licenced under the term of GNU GPL license.");
         
         addCommand(back);
         setCommandListener(this);
