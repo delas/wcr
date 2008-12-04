@@ -8,7 +8,9 @@ import javax.microedition.lcdui.Gauge;
 import net.sf.wcr.WCR;
 
 /**
- *
+ * This is the form that allow a player to show a nice gauge while waiting that
+ * all devices are found.
+ * 
  * @author Andrea Burattin
  */
 public class FindDeviceForm extends Form implements CommandListener

@@ -1,7 +1,6 @@
 package net.sf.wcr.media.capturing;
 
 import java.io.IOException;
-import net.sf.wcr.media.Video;
 import javax.microedition.lcdui.Image;
 import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
@@ -13,6 +12,11 @@ import net.sf.wcr.forms.misc.ConnectionLostForm;
 import net.sf.wcr.forms.misc.WinnerForm;
 import net.sf.wcr.media.Color;
 
+/**
+ * This is the implementation of a multiplayer - client game mode
+ * 
+ * @author Andrea Burattin
+ */
 public class ClientCapture extends Video
 {
     private VideoControl video_control;

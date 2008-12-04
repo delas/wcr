@@ -9,6 +9,7 @@ import javax.microedition.lcdui.Image;
  * color of an image.
  *
  * @author Andrea Burattin
+ * @author Riccardo Ferro
  */
 public class Color
 {
@@ -229,13 +230,13 @@ public class Color
             imgHsv[i] = rgb2hsv(r,g,b);
 
             /* it's black */
-            if (imgHsv[i][V_INDEX] < 65)
+            if (imgHsv[i][V_INDEX] < 75)
             {
                 palette[BLACK_INDEX]++;
                 continue;
             }
             /* it's white */
-            if (imgHsv[i][S_INDEX] < 15 && imgHsv[i][V_INDEX] > 60)
+            if (imgHsv[i][S_INDEX] < 10 && imgHsv[i][V_INDEX] > 70)
             {
                 palette[WHITE_INDEX]++;
                 continue;

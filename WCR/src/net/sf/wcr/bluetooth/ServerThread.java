@@ -56,24 +56,15 @@ public class ServerThread extends NetThread
             
             /* accept the incoming connection */
 	    conn(notifier.acceptAndOpen());
-            
-                parent.do_alert("got!", 1000);
-                Thread.sleep(1000);
-                
+
             /* create a welcome packet */
             p = new Packet("WELCOME", Color.getColorName(gameColor));
             
             /* send the welcome packet */
             p.submit(out());
-            
-                parent.do_alert("welcome send!", 1000);
-                Thread.sleep(1000);
-            
+
             /* read the response packet */
             p = read();
-            
-                parent.do_alert("response received!", 1000);
-                Thread.sleep(1000);
 
             if (p.getCommand().equals("WANNAPLAY"))
             {

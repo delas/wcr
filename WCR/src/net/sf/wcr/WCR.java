@@ -1,3 +1,6 @@
+/**
+ * Base project package
+ */
 package net.sf.wcr;
 
 import java.util.Vector;
@@ -26,10 +29,21 @@ import net.sf.wcr.forms.menu.MainMenuForm;
 import net.sf.wcr.forms.menu.SelectColorForm;
 import net.sf.wcr.forms.misc.SplashScreen;
 
+/**
+ * Base project class.
+ * 
+ * This is the main applet class, it not only extends a MIDlet Java class, but
+ * implements a DiscoveryListener: this class does not contain only the graphic
+ * related stuff, but is also the main Bluetooth core.
+ *
+ * @author Andrea Burattin
+ */
 public class WCR extends MIDlet implements DiscoveryListener
 {
 
+    /** The current display object */
     public Display display;
+    /** The application identifier */
     public UUID uuid;
 
     /* all the various application form */
@@ -43,14 +57,15 @@ public class WCR extends MIDlet implements DiscoveryListener
     private LocalDevice local;
     private DiscoveryAgent agent;
 
-    private static Player player;
-    private static boolean player_inited = false;
     private static VideoControl video_control;
     private ClientThread ct;
     private ServerThread st;
     private GameMode gameMode;
 
 
+    /**
+     * Class constructor
+     */
     public WCR()
     {
         uuid = new UUID("1a310b97237f81937", false);
@@ -63,31 +78,18 @@ public class WCR extends MIDlet implements DiscoveryListener
      * MIDlet methods
      * =========================================================================
      */
+    /**
+     * Signals the MIDlet that it has entered the Active state.
+     */
     public void startApp()
     {
 	try
 	{
 	    display = Display.getDisplay(this);
-            
-            ss = new SplashScreen(this);
-            
-            display.setCurrent(ss);
-//	    main_list = new List("Select Operation", Choice.IMPLICIT);
-//	    dev_list = new List("Select Device", Choice.IMPLICIT);
-//
-//            Image img = Image.createImage("/net/sf/wcr/media/files/splash/wcr.png");
-//            ImageItem imgi = new ImageItem("", img, INQUIRY_ERROR, "Argh!");
-//            display.setCurrent(img);
-//            main_list.append("New game", img);
-//	    main_list.append("Join game", null);
-//	    main_list.append("Single player", null);
-//	    main_list.addCommand(exit);
-//	    main_list.setCommandListener(this);
-//
-//	    dev_list.addCommand(back);
-//	    dev_list.setCommandListener(this);
 
-//	    display.setCurrent(main_list);
+            ss = new SplashScreen(this);
+
+            display.setCurrent(ss);
 	}
 	catch (Exception e)
 	{
@@ -95,10 +97,21 @@ public class WCR extends MIDlet implements DiscoveryListener
 	}
     }
 
+    /**
+     * Signals the MIDlet to enter the Paused state.
+     */
     public void pauseApp()
     {
     }
 
+    /**
+     * Signals the MIDlet to terminate and enter the Destroyed state.
+     * 
+     * @param unconditional If true when this method is called, the MIDlet must
+     * cleanup and release all resources. If false the MIDlet may throw
+     * MIDletStateChangeException to indicate it does not want to be destroyed
+     * at this time. 
+     */
     public void destroyApp(boolean unconditional)
     {
     }
@@ -110,6 +123,11 @@ public class WCR extends MIDlet implements DiscoveryListener
      * =========================================================================
      * DiscoveryListener methods
      * =========================================================================
+     */
+    /**
+     * 
+     * @param remoteDevice
+     * @param deviceClass
      */
     public void deviceDiscovered(RemoteDevice remoteDevice, DeviceClass deviceClass)
     {
@@ -129,14 +147,23 @@ public class WCR extends MIDlet implements DiscoveryListener
         }
     }
 
+    /**
+     * 
+     * @param transID
+     * @param serviceRecord
+     */
     public void servicesDiscovered(int transID, ServiceRecord[] serviceRecord)
     {}
 
+    /**
+     * 
+     * @param param
+     */
     public void inquiryCompleted(int param)
     {
 	switch (param)
 	{
-	    case DiscoveryListener.INQUIRY_COMPLETED:   
+	    case DiscoveryListener.INQUIRY_COMPLETED:
                 /* Inquiry completed normally */
 		showDeviceList();
 		break;
@@ -151,9 +178,17 @@ public class WCR extends MIDlet implements DiscoveryListener
 	}
     }
 
+    /**
+     * 
+     * @param transID
+     * @param respCode
+     */
     public void serviceSearchCompleted(int transID, int respCode)
     {}
-    
+
+    /**
+     * 
+     */
     public void cancelInquiry()
     {}
 
@@ -175,7 +210,7 @@ public class WCR extends MIDlet implements DiscoveryListener
         }
         display.setCurrent(mmf);
     }
-    
+
     /**
      * This is the method that shows the application credits
      */
@@ -187,7 +222,7 @@ public class WCR extends MIDlet implements DiscoveryListener
         }
         display.setCurrent(cf);
     }
-    
+
     /**
      * This is the method that shows the form searching devices
      */
@@ -217,10 +252,10 @@ public class WCR extends MIDlet implements DiscoveryListener
     {
         display.setCurrent(new DeviceListForm(this));
     }
-    
+
     /**
      * This is the method invoked when a single player game session is starting
-     * 
+     *
      * @param gameColor the current game color
      */
     public void showSinglePlayerCamera(int gameColor)
@@ -228,21 +263,40 @@ public class WCR extends MIDlet implements DiscoveryListener
         display.setCurrent(new SinglePlayerCaptureForm(this, gameColor));
     }
 
+    /**
+     * This method builds a new ClientCaptureForm, with the gave color
+     * 
+     * @param gameColor the current game color
+     */
     public void showClientCamera(int gameColor)
     {
         display.setCurrent(new ClientCaptureForm(this, gameColor));
     }
 
+    /**
+     * This method builds a new ServerCaptureForm, with the gave color
+     * 
+     * @param gameColor the current game color
+     */
     public void showServerCamera(int gameColor)
     {
         display.setCurrent(new ServerCaptureForm(this, gameColor));
     }
 
+    /**
+     * Shows a color list menu
+     */
     public void selectGameColor()
     {
         display.setCurrent(new SelectColorForm(this));
     }
 
+    /**
+     * Shows an alert message
+     * 
+     * @param msg the string message
+     * @param time_out the string message duration
+     */
     public void do_alert(String msg, int time_out)
     {
 	if (display.getCurrent() instanceof Alert)
@@ -252,13 +306,18 @@ public class WCR extends MIDlet implements DiscoveryListener
 	}
 	else
 	{
-	    Alert alert = new Alert("Bluetooth");
+	    Alert alert = new Alert("WCR");
 	    alert.setString(msg);
 	    alert.setTimeout(time_out);
 	    display.setCurrent(alert);
 	}
     }
-    
+
+    /**
+     * Gets the current discoveryAgent
+     * 
+     * @return a discovery agent
+     */
     public DiscoveryAgent discoveryAgent()
     {
         if (agent == null)
@@ -267,7 +326,12 @@ public class WCR extends MIDlet implements DiscoveryListener
         }
         return agent;
     }
-    
+
+    /**
+     * Gets the current localDevice
+     * 
+     * @return the local device
+     */
     public LocalDevice local()
     {
         try
@@ -284,6 +348,11 @@ public class WCR extends MIDlet implements DiscoveryListener
         return local;
     }
 
+    /**
+     * Gets a player handler to the device camera
+     * 
+     * @return the camera player
+     */
     public static final Player getCamera()
     {
 //        if (player == null)
@@ -310,7 +379,12 @@ public class WCR extends MIDlet implements DiscoveryListener
 //        }
 //        return player;
     }
-    
+
+    /**
+     * Gets a video control associated with the device camera
+     * 
+     * @return the video control
+     */
     public static final VideoControl getVideoControl()
     {
         Player p = getCamera();
@@ -332,47 +406,72 @@ public class WCR extends MIDlet implements DiscoveryListener
         }
         return video_control;
     }
-    
-    public static boolean playerInited()
-    {
-        return player_inited;
-    }
-    
-    public static void playerInited(boolean pi)
-    {
-        player_inited = pi;
-    }
-    
+
+    /**
+     * Sets the current game mode
+     * 
+     * @param gm a game mode
+     */
     public void gameMode(GameMode gm)
     {
         gameMode = gm;
     }
-    
+
+    /**
+     * Gets the current game mode
+     * 
+     * @return the current game mode
+     */
     public GameMode gameMode()
     {
         return gameMode;
     }
-    
+
+    /**
+     * Sets the applet server thread
+     * 
+     * @param st the server thread to be setted
+     */
     public void ServerThread(ServerThread st)
     {
         this.st = st;
     }
-    
+
+    /**
+     * Gets the current server thread
+     * 
+     * @return the current server thread
+     */
     public ServerThread ServerThread()
     {
         return this.st;
     }
-    
+
+    /**
+     * Sets the applet client thread
+     * 
+     * @param ct the client thread to be setted
+     */
     public void ClientThread(ClientThread ct)
     {
         this.ct = ct;
     }
-    
+
+    /**
+     * Gets the current client thread
+     * 
+     * @return the current client thread
+     */
     public ClientThread ClientThread()
     {
         return this.ct;
     }
-    
+
+    /**
+     * Gets the devices list
+     * 
+     * @return the found devices list
+     */
     public Vector getAllDevices()
     {
         return this.devices;

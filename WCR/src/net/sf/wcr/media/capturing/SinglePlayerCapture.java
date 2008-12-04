@@ -1,6 +1,5 @@
 package net.sf.wcr.media.capturing;
 
-import net.sf.wcr.media.Video;
 import javax.microedition.lcdui.Image;
 import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
@@ -9,6 +8,11 @@ import net.sf.wcr.WCR;
 import net.sf.wcr.forms.misc.WinnerForm;
 import net.sf.wcr.media.Color;
 
+/**
+ * This is the implementation of a singleplayer game mode
+ * 
+ * @author Andrea Burattin
+ */
 public class SinglePlayerCapture extends Video
 {
     private VideoControl video_control;
