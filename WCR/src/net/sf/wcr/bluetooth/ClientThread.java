@@ -26,7 +26,6 @@ package net.sf.wcr.bluetooth;
 
 import java.io.IOException;
 import javax.bluetooth.BluetoothStateException;
-import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.RemoteDevice;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;

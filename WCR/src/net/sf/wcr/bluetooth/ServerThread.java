@@ -69,7 +69,7 @@ public class ServerThread extends NetThread
 	    {
 		System.out.println("Impossible set to discoverable");
 	    }
-            String connStr = "btspp://localhost:1;master=false;encrypt=false;authenticate=false";
+            String connStr = "btspp://localhost:" + parent.uuid + ";name=" + parent.WCR_SERVICE;
 //	    notifier = (StreamConnectionNotifier)Connector.open("btspp://localhost:" + parent.uuid);
             notifier = (StreamConnectionNotifier)Connector.open(connStr);
             

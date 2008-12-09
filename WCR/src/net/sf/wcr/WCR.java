@@ -66,6 +66,8 @@ public class WCR extends MIDlet implements DiscoveryListener
     public Display display;
     /** The application identifier */
     public UUID uuid;
+    public static final String WCR_SERVICE = "wcr_service";
+    private boolean searchDone = false;
 
     /* all the various application form */
     SplashScreen ss;
@@ -154,8 +156,8 @@ public class WCR extends MIDlet implements DiscoveryListener
     {
         try
         {
-            //int transID = agent.searchServices(null, new UUID[]{uuid}, remoteDevice, this);
-            if(true)
+//            int transID = agent.searchServices(null, new UUID[]{uuid}, remoteDevice, this);
+            if(deviceClass.getMajorDeviceClass() == 0x0200)
             {
                 devices.addElement(remoteDevice);
                 do_alert("New device found!", 500);
@@ -186,6 +188,18 @@ public class WCR extends MIDlet implements DiscoveryListener
 	{
 	    case DiscoveryListener.INQUIRY_COMPLETED:
                 /* Inquiry completed normally */
+                try{
+                    for (int i = 0, cnt = devices.size(); i < cnt; i++)
+                    {
+                        discoveryAgent().searchServices(new int[]{0x0200},
+                                new UUID[]{uuid}, (RemoteDevice) devices.elementAt(i), this);
+                        waitForSearchDone();
+                    }
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
 		showDeviceList();
 		break;
 	    case DiscoveryListener.INQUIRY_ERROR:
@@ -205,7 +219,13 @@ public class WCR extends MIDlet implements DiscoveryListener
      * @param respCode
      */
     public void serviceSearchCompleted(int transID, int respCode)
-    {}
+    {
+        searchDone = true;
+        synchronized (this)
+        {
+            this.notifyAll();
+        }
+    }
 
     /**
      * 
@@ -220,6 +240,23 @@ public class WCR extends MIDlet implements DiscoveryListener
      * Own methods
      * =========================================================================
      */
+    
+        private void waitForSearchDone()
+    {
+        searchDone = false;
+
+        try {
+            while (!searchDone)
+            {
+                synchronized (this) {
+                    this.wait();
+                }
+            }
+        } catch (Exception error) {
+        }
+    }
+
+    
     /**
      * This is the method that shows the main application menu
      */
