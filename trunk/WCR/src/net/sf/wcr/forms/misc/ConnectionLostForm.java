@@ -35,6 +35,6 @@ public class ConnectionLostForm extends EndGameForm
 {
     public ConnectionLostForm(WCR wcr)
     {
-        super(wcr, "Connection lost...", "connection_lost.png", "Connection lost...");
+        super(wcr, "Connection lost...", "connection_lost.png", "");
     }
 }
