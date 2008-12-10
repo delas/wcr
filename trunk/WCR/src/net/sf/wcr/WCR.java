@@ -157,6 +157,7 @@ public class WCR extends MIDlet implements DiscoveryListener
             UUID[] searchList = new UUID[]{WCR_UUID};
             int[] attribSet = {0x0100, 0x0001, 0x0002, 0x0003, 0x0004};
             discoveryAgent().searchServices(attribSet, searchList, remoteDevice, this);
+            waitForSearchDone();
         }
         catch(Exception e)
         {
@@ -174,17 +175,6 @@ public class WCR extends MIDlet implements DiscoveryListener
 	{
 	    case DiscoveryListener.INQUIRY_COMPLETED:
                 /* Inquiry completed normally */
-                try
-                {
-                    for (int i = 0, cnt = devices.size(); i < cnt; i++)
-                    {
-                        waitForSearchDone();
-                    }
-                }
-                catch(Exception e)
-                {
-                    e.printStackTrace();
-                }
 		showDeviceList();
 		break;
 	    case DiscoveryListener.INQUIRY_ERROR:
