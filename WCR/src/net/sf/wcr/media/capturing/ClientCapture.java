@@ -67,26 +67,32 @@ public class ClientCapture extends Video
             if (color == ct.getGameColor())
             {
                 /* ooook, you're the winner! :) */
-                /* we can now close the camera... */
-                player.close();
+                ct.gameFinished(true);
                 /* said this to your oppenent */
                 Packet p = new Packet("YOULOSE");
                 ct.write(p);
-                /* we can close the connection */
-                ct.close();
+                /* we can now close the camera... */
+                player.close();
+//                /* we can close the connection */
+//                ct.close();
                 /* inform yourself about this */
                 midlet.display.setCurrent(new WinnerForm(midlet));
             }
             else
             {
+                /* submit something, to check the connection */
+                Packet p = new Packet("SHOOT");
+                ct.write(p);
+                /* print a "do panic" message! :) */
                 String msg = "Wrong color: required " + 
                         Color.getColorName(ct.getGameColor()) + ", shooted " +
                         Color.getColorName(color) + "!";
                 midlet.do_alert(msg, 2000);
             }
         }
-        catch(IOException e)
+        catch(Exception e)
         {
+            e.printStackTrace();
             midlet.display.setCurrent(new ConnectionLostForm(midlet));
         }
     }

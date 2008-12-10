@@ -48,6 +48,7 @@ abstract public class NetThread extends Thread
     private OutputStream out;
     private InputStream in;
     private LocalDevice local;
+    private boolean gameFinished;
 
 
     /**
@@ -59,6 +60,7 @@ abstract public class NetThread extends Thread
     public NetThread(WCR p) throws BluetoothStateException
     {
 	this.parent = p;
+        this.gameFinished = false;
         local = LocalDevice.getLocalDevice();
     }
     
@@ -143,18 +145,12 @@ abstract public class NetThread extends Thread
      * This method writes a packet through the network connection
      *
      * @param pkg the packet to be written
+     * @throws Exception in some situation an exception can be throwned (e.g.
+     * connection lost)
      */
-    public void write(Packet pkg)
+    public void write(Packet pkg) throws Exception
     {
-	try
-	{
-            pkg.submit(out());
-	}
-	catch (IOException e)
-	{
-	    e.printStackTrace();
-            parent.display.setCurrent(new ConnectionLostForm(parent));
-	}
+	pkg.submit(out());
     }
 
     /**
@@ -165,7 +161,16 @@ abstract public class NetThread extends Thread
      */
     public Packet read() throws IOException
     {
-        return Packet.fetch(in());
+        Packet p = null;
+        try
+        {
+            p = Packet.fetch(in());
+        }
+        catch(OutOfMemoryError e)
+        {}
+        catch(NullPointerException e)
+        {}
+        return p;
     }
 
     /**
@@ -175,14 +180,41 @@ abstract public class NetThread extends Thread
      */
     public void close() throws IOException
     {
-	conn.close();
+        if (conn != null)
+        {
+            conn.close();
+            conn = null;
+        }
         if (out != null)
         {
             out.close();
+            out = null;
         }
         if (in != null)
         {
             in.close();
+            in = null;
         }
+    }
+    
+    /**
+     * Method to get the game status
+     * 
+     * @return the current game status
+     */
+    public boolean gameFinished()
+    {
+        return gameFinished;
+    }
+    
+    /**
+     * Method to set the game status
+     * 
+     * @param gameFinished the game status to be set
+     */
+    public void gameFinished(boolean gameFinished)
+    {
+        /* if there is a winner (or a loser), the game MUST be finished */
+        this.gameFinished = gameFinished;
     }
 }

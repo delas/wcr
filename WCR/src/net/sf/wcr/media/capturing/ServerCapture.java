@@ -67,26 +67,33 @@ public class ServerCapture extends Video
             if (color == st.getGameColor())
             {
                 /* ooook, you're the winner! :) */
-                /* we can now close the camera... */
-                player.close();
+                st.gameFinished(true);
                 /* said this to your oppenent */
                 Packet p = new Packet("YOULOSE");
                 st.write(p);
-                /* we can close the connection */
-                st.close();
+                /* we can now close the camera... */
+                player.close();
+//                /* we can close the connection */
+//                st.close();
                 /* inform yourself about this */
                 midlet.display.setCurrent(new WinnerForm(midlet));
             }
             else
             {
+                /* submit something, to check the connection */
+                Packet p = new Packet("SHOOT");
+                st.write(p);
+                /* print a "do panic" message! :) */
                 String msg = "Wrong color: required " + 
                         Color.getColorName(st.getGameColor()) + ", shooted " +
                         Color.getColorName(color) + "!";
                 midlet.do_alert(msg, 2000);
             }
         }
-        catch(IOException e)
+        catch(Exception e)
         {
+            System.out.println("=============> Exception on ServerCapture");
+            e.printStackTrace();
             midlet.display.setCurrent(new ConnectionLostForm(midlet));
         }
     }
