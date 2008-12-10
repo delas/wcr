@@ -74,7 +74,8 @@ public class DeviceListForm extends List implements CommandListener
             /* let's add all the finded devices */
             for (int x = 0; x < devices.size(); x++)
             {
-                device_name = ((RemoteDevice) devices.elementAt(x)).getFriendlyName(false) + " - " + ((RemoteDevice) devices.elementAt(x)).getBluetoothAddress();
+//                device_name = ((RemoteDevice) devices.elementAt(x)).getFriendlyName(false) + " - " + ((RemoteDevice) devices.elementAt(x)).getBluetoothAddress();
+                device_name = ((RemoteDevice) devices.elementAt(x)).getFriendlyName(false);
                 append(device_name, opponent_icon);
             }
             

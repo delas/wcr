@@ -73,7 +73,7 @@ public class ClientCaptureForm extends VideoCanvas implements CommandListener
     {
         if (c == shoot)
         {
-            new ClientCapture(wcr, player, wcr.ClientThread()).start();
+             new ClientCapture(wcr, player, wcr.ClientThread()).start();
         }
     }
 }

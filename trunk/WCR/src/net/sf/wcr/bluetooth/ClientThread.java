@@ -27,9 +27,11 @@ package net.sf.wcr.bluetooth;
 import java.io.IOException;
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import net.sf.wcr.WCR;
+import net.sf.wcr.forms.misc.ConnectionLostForm;
 import net.sf.wcr.forms.misc.LoserForm;
 import net.sf.wcr.media.Color;
 
@@ -62,10 +64,10 @@ public class ClientThread extends NetThread
 	try
         {
             /* create the connection */
-            String connStr = "btspp://"+ remote.getBluetoothAddress() +":1;master=false;encrypt=false;authenticate=false";
-//            String connStr = agent.selectService(
-//                    parent.uuid,
-//                    ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+//            String connStr = "btspp://"+ remote.getBluetoothAddress() +":1;master=false;encrypt=false;authenticate=false";
+            String connStr = parent.discoveryAgent().selectService(
+                    WCR.WCR_UUID,
+                    ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
 
             conn((StreamConnection) Connector.open(connStr));
 
@@ -95,18 +97,48 @@ public class ClientThread extends NetThread
             /* now, wait to lose... :/ */
             waitToLose();
 	}
+        catch(IOException e)
+        {
+            System.out.println("=============> IOException on ClientThread");
+            e.printStackTrace();
+            parent.display.setCurrent(new ConnectionLostForm(parent));
+        }
 	catch (Exception e)
-	{}
+	{
+            System.out.println("=============> Exception on ClientThread");
+            e.printStackTrace();
+        }
+        catch(OutOfMemoryError e)
+        {
+            System.out.println("=============> ClientThread out of memory!!!");
+            e.printStackTrace();
+        }
     }
     
-    private void waitToLose() throws IOException
+    private void waitToLose() throws IOException, InterruptedException
     {
-        Packet lost = read();
-        if (lost.getCommand().equals("YOULOSE"))
+        Packet lost;
+        /* wait until we receive a YOULOST message */
+        do
+        {
+            lost = read();
+            if (lost == null)
+            {
+                break;
+            }
+        } while (!lost.getCommand().equals("YOULOSE") && !gameFinished());
+
+        /* we can be here for two causes:
+         * - the connection with the client has been lost (if lost == null)
+         * - packet red contains a "YOULOSE" message, so we have lost */
+        if (lost != null && lost.getCommand().equals("YOULOSE"))
         {
             parent.display.setCurrent(new LoserForm(parent));
         }
-
+        else if (!gameFinished())
+        {
+            parent.display.setCurrent(new ConnectionLostForm(parent));
+        }
         close();
     }
 }

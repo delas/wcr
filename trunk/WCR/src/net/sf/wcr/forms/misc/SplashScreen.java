@@ -52,7 +52,7 @@ public class SplashScreen extends Form implements Runnable
     {
         super("Welcome to WCR");
 
-        this.loading_time = 2500;
+        this.loading_time = 2;//500;
         this.wcr = wcr;
         this.img_path = "/net/sf/wcr/media/files/splash/";
 
