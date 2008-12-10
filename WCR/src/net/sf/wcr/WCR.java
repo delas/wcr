@@ -26,6 +26,7 @@ package net.sf.wcr;
 
 import java.util.Vector;
 import javax.bluetooth.BluetoothStateException;
+import javax.bluetooth.DataElement;
 import javax.bluetooth.DeviceClass;
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.DiscoveryListener;
@@ -65,14 +66,13 @@ public class WCR extends MIDlet implements DiscoveryListener
     /** The current display object */
     public Display display;
     /** The application identifier */
-    public UUID uuid;
-    public static final String WCR_SERVICE = "wcr_service";
+    public static final UUID WCR_UUID  = new UUID("1a310b97237f81937", false);
+    public static final String WCR_SERVICE = "WCR-game";
     private boolean searchDone = false;
 
     /* all the various application form */
     SplashScreen ss;
     MainMenuForm mmf;
-    FindDeviceForm fdf;
     CreditsForm cf;
     SinglePlayerCaptureForm spcf;
 
@@ -90,9 +90,7 @@ public class WCR extends MIDlet implements DiscoveryListener
      * Class constructor
      */
     public WCR()
-    {
-        uuid = new UUID("1a310b97237f81937", false);
-    }
+    {}
 
 
 
@@ -156,27 +154,15 @@ public class WCR extends MIDlet implements DiscoveryListener
     {
         try
         {
-//            int transID = agent.searchServices(null, new UUID[]{uuid}, remoteDevice, this);
-            if(deviceClass.getMajorDeviceClass() == 0x0200)
-            {
-                devices.addElement(remoteDevice);
-                do_alert("New device found!", 500);
-            }
+            UUID[] searchList = new UUID[]{WCR_UUID};
+            int[] attribSet = {0x0100, 0x0001, 0x0002, 0x0003, 0x0004};
+            discoveryAgent().searchServices(attribSet, searchList, remoteDevice, this);
         }
-        //catch(BluetoothStateException e)
         catch(Exception e)
         {
             do_alert(e.getMessage(), Alert.FOREVER);
         }
     }
-
-    /**
-     * 
-     * @param transID
-     * @param serviceRecord
-     */
-    public void servicesDiscovered(int transID, ServiceRecord[] serviceRecord)
-    {}
 
     /**
      * 
@@ -188,11 +174,10 @@ public class WCR extends MIDlet implements DiscoveryListener
 	{
 	    case DiscoveryListener.INQUIRY_COMPLETED:
                 /* Inquiry completed normally */
-                try{
+                try
+                {
                     for (int i = 0, cnt = devices.size(); i < cnt; i++)
                     {
-                        discoveryAgent().searchServices(new int[]{0x0200},
-                                new UUID[]{uuid}, (RemoteDevice) devices.elementAt(i), this);
                         waitForSearchDone();
                     }
                 }
@@ -211,6 +196,25 @@ public class WCR extends MIDlet implements DiscoveryListener
 		mainMenu();
 		break;
 	}
+    }
+
+    /**
+     * 
+     * @param transID
+     * @param serviceRecord
+     */
+    public void servicesDiscovered(int transID, ServiceRecord[] serviceRecord)
+    {
+        for (int i = 0; i < serviceRecord.length; i++)
+        {
+            DataElement serviceNameElement = serviceRecord[i].getAttributeValue(0x0100);
+            String serviceName = (String)serviceNameElement.getValue();
+            if (serviceName.equals(WCR_SERVICE))
+            {
+                do_alert("New device found!", 500);
+                devices.addElement(serviceRecord[i].getHostDevice());
+            }
+        }
     }
 
     /**
@@ -241,7 +245,7 @@ public class WCR extends MIDlet implements DiscoveryListener
      * =========================================================================
      */
     
-        private void waitForSearchDone()
+    private void waitForSearchDone()
     {
         searchDone = false;
 
@@ -286,10 +290,7 @@ public class WCR extends MIDlet implements DiscoveryListener
      */
     public void findDevices()
     {
-        if (fdf == null)
-        {
-            fdf = new FindDeviceForm(this);
-        }
+        FindDeviceForm fdf = new FindDeviceForm(this);
 	try
 	{
             display.setCurrent(fdf);
