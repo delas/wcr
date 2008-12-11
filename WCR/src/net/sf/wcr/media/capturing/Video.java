@@ -26,6 +26,7 @@ package net.sf.wcr.media.capturing;
 
 import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 
 /**
@@ -56,8 +57,14 @@ public abstract class Video extends Thread
      */
     public Video(WCR midlet, Player player)
     {
+        Debug.dbg("Video created", 2, this);
 	this.midlet = midlet;
         this.player = player;
+    }
+    
+    protected void finalize()
+    {
+        Debug.dbg("Video finalized", 2, this);
     }
     
     /**
