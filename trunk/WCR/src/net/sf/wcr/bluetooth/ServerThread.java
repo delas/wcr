@@ -25,13 +25,13 @@
 package net.sf.wcr.bluetooth;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Gauge;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 import net.sf.wcr.forms.misc.ConnectionLostForm;
 import net.sf.wcr.forms.misc.LoserForm;
@@ -56,6 +56,20 @@ public class ServerThread extends NetThread
         this.gameColor = gameColor;
     }
     
+    protected void finalize()
+    {
+        super.finalize();
+    }
+    
+    public void close() throws IOException
+    {
+        super.close();
+        Debug.dbg("   Closing notifier...", 7, this);
+        notifier.close();
+        notifier = null;
+        Debug.dbg("   Notifier closed", 7, this);
+    }
+    
     public int getGameColor()
     {
         return gameColor;
@@ -66,14 +80,17 @@ public class ServerThread extends NetThread
         Packet p;
 	try
 	{
+            Debug.dbg("Starting connection procedure", 3, this);
             /* create the connection */
 	    if (!local().setDiscoverable(DiscoveryAgent.GIAC))
 	    {
-		System.out.println("Impossible set to discoverable");
+		System.out.println("Impossible to set to discoverable");
 	    }
             String connStr = "btspp://localhost:" + WCR.WCR_UUID + ";name=" + WCR.WCR_SERVICE;
-//	    notifier = (StreamConnectionNotifier)Connector.open("btspp://localhost:" + parent.uuid);
+            Debug.dbg("   Connection string: "+ connStr, 3, this);
+            
             notifier = (StreamConnectionNotifier)Connector.open(connStr);
+            Debug.dbg("   Localy connected", 3, this);
             
             Form f = new Form("Server activated");
 	    f.append(new Gauge("Server activated, waiting for device...", false,
@@ -82,15 +99,18 @@ public class ServerThread extends NetThread
             
             /* accept the incoming connection */
 	    conn(notifier.acceptAndOpen());
+            Debug.dbg("   Connected with someone", 3, this);
 
             /* create a welcome packet */
             p = new Packet("WELCOME", Color.getColorName(gameColor));
             
             /* send the welcome packet */
             p.submit(out());
+            Debug.dbg("   Welcome message sent", 3, this);
 
             /* read the response packet */
             p = read();
+            Debug.dbg("   Welcome-response red", 3, this);
 
             if (p.getCommand().equals("WANNAPLAY"))
             {
@@ -104,52 +124,34 @@ public class ServerThread extends NetThread
             /* now, wait to lose... :/ */
             waitToLose();
 	}
-        catch(InterruptedIOException e)
-        {
-            System.out.println("=============> InterruptedException on ServerThread");
-            e.printStackTrace();
-        }
         catch(IOException e)
         {
-            System.out.println("=============> Exception on ServerThread");
-            e.printStackTrace();
-            parent.display.setCurrent(new ConnectionLostForm(parent));
+            Debug.dbg(e, 9, this);
         }
 	catch (Exception e)
 	{
-            System.out.println("=============> Exception on ServerThread - base");
-            e.printStackTrace();
-        }
-        catch(OutOfMemoryError e)
-        {
-            System.out.println("=============> ServerThread out of memory!!!");
-            e.printStackTrace();
+            Debug.dbg(e, 9, this);
         }
         finally
         {
-            try
-            {
-                close();
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
+//            parent.ServerThread(null);
+            Debug.dbg("ServerThread body finished", 3, this);
         }
     }
     
     private void waitToLose() throws IOException, InterruptedException
     {
+        Debug.dbg("   Starting waitToLose()", 3, this);
         Packet lost = null;
         /* wait until we receive a YOULOST message */
         do
         {
             lost = read();
-            if (lost == null)
+            if (lost == null || gameFinished())
             {
                 break;
             }
-        } while (!lost.getCommand().equals("YOULOSE") && !gameFinished());
+        } while (!lost.getCommand().equals("YOULOSE"));
 
         /* we can be here for two causes:
          * - the connection with the client has been lost (if lost == null)
@@ -162,6 +164,8 @@ public class ServerThread extends NetThread
         {
             parent.display.setCurrent(new ConnectionLostForm(parent));
         }
+        
         close();
+        Debug.dbg("   Finished waitToLose()", 3, this);
     }
 }
