@@ -85,6 +85,8 @@ public class SplashScreen extends Form implements Runnable
             wcr.mainMenu();
         }
         catch(InterruptedException ie)
-        {}
+        {
+            Debug.dbg(ie, 9, this);
+        }
     }
 }
