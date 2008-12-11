@@ -30,6 +30,7 @@ import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 import net.sf.wcr.forms.misc.ConnectionLostForm;
 import net.sf.wcr.forms.misc.LoserForm;
@@ -53,6 +54,11 @@ public class ClientThread extends NetThread
         this.remote = rd;
     }
     
+    protected void finalize()
+    {
+        super.finalize();
+    }
+    
     public int getGameColor()
     {
         return gameColor;
@@ -63,16 +69,19 @@ public class ClientThread extends NetThread
         Packet p;
 	try
         {
+            Debug.dbg("Starting connection procedure", 3, this);
             /* create the connection */
-//            String connStr = "btspp://"+ remote.getBluetoothAddress() +":1;master=false;encrypt=false;authenticate=false";
             String connStr = parent.discoveryAgent().selectService(
                     WCR.WCR_UUID,
                     ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+            Debug.dbg("   Connection string: "+ connStr, 3, this);
 
             conn((StreamConnection) Connector.open(connStr));
+            Debug.dbg("   Connected with the server", 3, this);
 
             /* read welcome packet */
             p = read();
+            Debug.dbg("   Welcome message received", 3, this);
 
             if (p.getCommand().equals("WELCOME"))
             {
@@ -84,6 +93,7 @@ public class ClientThread extends NetThread
                 
                 /* submit the response packet */
                 p.submit(out());
+                Debug.dbg("   Wannaplay message sent", 3, this);
                 
                 /* ok, now we can start the game! */
                 parent.do_alert("Game starting in 3 seconds...\n" +
@@ -99,34 +109,31 @@ public class ClientThread extends NetThread
 	}
         catch(IOException e)
         {
-            System.out.println("=============> IOException on ClientThread");
-            e.printStackTrace();
-            parent.display.setCurrent(new ConnectionLostForm(parent));
+            Debug.dbg(e, 9, this);
         }
 	catch (Exception e)
 	{
-            System.out.println("=============> Exception on ClientThread");
-            e.printStackTrace();
+            Debug.dbg(e, 9, this);
         }
-        catch(OutOfMemoryError e)
+        finally
         {
-            System.out.println("=============> ClientThread out of memory!!!");
-            e.printStackTrace();
+            Debug.dbg("ClientThread body finished", 3, this);
         }
     }
     
     private void waitToLose() throws IOException, InterruptedException
     {
+        Debug.dbg("   Starting waitToLose()", 3, this);
         Packet lost;
         /* wait until we receive a YOULOST message */
         do
         {
             lost = read();
-            if (lost == null)
+            if (lost == null || gameFinished())
             {
                 break;
             }
-        } while (!lost.getCommand().equals("YOULOSE") && !gameFinished());
+        } while (!lost.getCommand().equals("YOULOSE"));
 
         /* we can be here for two causes:
          * - the connection with the client has been lost (if lost == null)
@@ -140,5 +147,6 @@ public class ClientThread extends NetThread
             parent.display.setCurrent(new ConnectionLostForm(parent));
         }
         close();
+        Debug.dbg("   Finished waitToLose()", 3, this);
     }
 }

@@ -30,8 +30,8 @@ import java.io.OutputStream;
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.LocalDevice;
 import javax.microedition.io.StreamConnection;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
-import net.sf.wcr.forms.misc.ConnectionLostForm;
 
 /**
  * This abstract class is a prototype for all the network operations. It is
@@ -59,9 +59,15 @@ abstract public class NetThread extends Thread
      */
     public NetThread(WCR p) throws BluetoothStateException
     {
+        Debug.dbg("NetThread created", 2, this);
 	this.parent = p;
         this.gameFinished = false;
         local = LocalDevice.getLocalDevice();
+    }
+    
+    protected void finalize()
+    {
+        Debug.dbg("NetThread finalized", 2, this);
     }
     
     public void run()
@@ -72,7 +78,7 @@ abstract public class NetThread extends Thread
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            Debug.dbg(e, 9, this);
         }
     }
 
@@ -167,9 +173,13 @@ abstract public class NetThread extends Thread
             p = Packet.fetch(in());
         }
         catch(OutOfMemoryError e)
-        {}
+        {
+            Debug.dbg(e, 9, this);
+        }
         catch(NullPointerException e)
-        {}
+        {
+            Debug.dbg(e, 9, this);
+        }
         return p;
     }
 
@@ -180,21 +190,26 @@ abstract public class NetThread extends Thread
      */
     public void close() throws IOException
     {
+        Debug.dbg("   Closing connections...", 7, this);
         if (conn != null)
         {
             conn.close();
             conn = null;
+            Debug.dbg("      conn.close()", 7, this);
         }
         if (out != null)
         {
             out.close();
             out = null;
+            Debug.dbg("      out.close()", 7, this);
         }
         if (in != null)
         {
             in.close();
             in = null;
+            Debug.dbg("      in.close()", 7, this);
         }
+        Debug.dbg("   close()", 7, this);
     }
     
     /**
@@ -216,5 +231,6 @@ abstract public class NetThread extends Thread
     {
         /* if there is a winner (or a loser), the game MUST be finished */
         this.gameFinished = gameFinished;
+        Debug.dbg("gameFinished("+ gameFinished +")", 7, this);
     }
 }

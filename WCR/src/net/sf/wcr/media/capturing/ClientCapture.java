@@ -24,11 +24,11 @@
 
 package net.sf.wcr.media.capturing;
 
-import java.io.IOException;
 import javax.microedition.lcdui.Image;
 import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 import net.sf.wcr.bluetooth.ClientThread;
 import net.sf.wcr.bluetooth.Packet;
@@ -56,6 +56,7 @@ public class ClientCapture extends Video
     
     protected void exec() throws MediaException
     {
+        Debug.dbg("ClientCapture started", 7, this);
         /* get the image */
         byte[] raw = video_control.getSnapshot("encoding=jpeg");
         Image image = Image.createImage(raw, 0, raw.length);
@@ -73,8 +74,6 @@ public class ClientCapture extends Video
                 ct.write(p);
                 /* we can now close the camera... */
                 player.close();
-//                /* we can close the connection */
-//                ct.close();
                 /* inform yourself about this */
                 midlet.display.setCurrent(new WinnerForm(midlet));
             }
@@ -92,8 +91,20 @@ public class ClientCapture extends Video
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            Debug.dbg(e, 9, this);
             midlet.display.setCurrent(new ConnectionLostForm(midlet));
+        }
+        finally
+        {
+            /* we can close the connection */
+            try{
+                ct.close();
+            }
+            catch (Exception e)
+            {
+                Debug.dbg(e, 9, this);
+            }
+            Debug.dbg("ClientCapture finished", 7, this);
         }
     }
 }
