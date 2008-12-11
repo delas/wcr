@@ -76,6 +76,7 @@ public class WCR extends MIDlet implements DiscoveryListener
     CreditsForm cf;
     SinglePlayerCaptureForm spcf;
 
+    private Vector raw_devices;
     private Vector devices;
     private LocalDevice local;
     private DiscoveryAgent agent;
@@ -152,17 +153,8 @@ public class WCR extends MIDlet implements DiscoveryListener
      */
     public void deviceDiscovered(RemoteDevice remoteDevice, DeviceClass deviceClass)
     {
-        try
-        {
-            UUID[] searchList = new UUID[]{WCR_UUID};
-            int[] attribSet = {0x0100, 0x0001, 0x0002, 0x0003, 0x0004};
-            discoveryAgent().searchServices(attribSet, searchList, remoteDevice, this);
-            waitForSearchDone();
-        }
-        catch(Exception e)
-        {
-            do_alert(e.getMessage(), Alert.FOREVER);
-        }
+        raw_devices.addElement(remoteDevice);
+        Debug.dbg("deviceDiscovered", 3, this);
     }
 
     /**
@@ -175,6 +167,22 @@ public class WCR extends MIDlet implements DiscoveryListener
 	{
 	    case DiscoveryListener.INQUIRY_COMPLETED:
                 /* Inquiry completed normally */
+                UUID[] searchList = new UUID[]{WCR_UUID};
+                int[] attribSet ={0x0100, 0x0001, 0x0002, 0x0003, 0x0004};
+                for(int i = 0; i < raw_devices.size(); i++)
+                {
+                    try
+                    {
+                        RemoteDevice rd = (RemoteDevice)raw_devices.elementAt(i);
+                        discoveryAgent().searchServices(attribSet, searchList, rd, this);
+                        waitForSearchDone();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.dbg(e, 9, this);
+                        do_alert(e.getMessage(), Alert.FOREVER);
+                    }
+                }
 		showDeviceList();
 		break;
 	    case DiscoveryListener.INQUIRY_ERROR:
@@ -239,14 +247,19 @@ public class WCR extends MIDlet implements DiscoveryListener
     {
         searchDone = false;
 
-        try {
+        try
+        {
             while (!searchDone)
             {
-                synchronized (this) {
+                synchronized (this)
+                {
                     this.wait();
                 }
             }
-        } catch (Exception error) {
+        }
+        catch (Exception e)
+        {
+            Debug.dbg(e, 9, this);
         }
     }
 
@@ -280,17 +293,27 @@ public class WCR extends MIDlet implements DiscoveryListener
      */
     public void findDevices()
     {
-        FindDeviceForm fdf = new FindDeviceForm(this);
 	try
 	{
-            display.setCurrent(fdf);
-	    devices = new java.util.Vector();
+            display.setCurrent(new FindDeviceForm(this));
+            /* clean the raw device vector */
+            if (raw_devices == null)
+            {
+                raw_devices = new java.util.Vector();
+            }
+            raw_devices.removeAllElements();
+            /* clean device vector */
+            if (devices == null)
+            {
+                devices = new java.util.Vector();
+            }
+            devices.removeAllElements();
             discoveryAgent().startInquiry(DiscoveryAgent.GIAC, this);
 	}
 	catch (Exception e)
 	{
 	    this.do_alert("Erron in initiating search:\n" + e.getMessage(), 4000);
-            e.printStackTrace();
+            Debug.dbg(e, 9, this);
 	}
     }
 
@@ -483,6 +506,10 @@ public class WCR extends MIDlet implements DiscoveryListener
      */
     public void ServerThread(ServerThread st)
     {
+        if (this.st != null)
+        {
+            this.st = null;
+        }
         this.st = st;
     }
 
@@ -503,6 +530,10 @@ public class WCR extends MIDlet implements DiscoveryListener
      */
     public void ClientThread(ClientThread ct)
     {
+        if (this.ct != null)
+        {
+            this.ct = null;
+        }
         this.ct = ct;
     }
 
