@@ -33,6 +33,7 @@ import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.List;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 import net.sf.wcr.bluetooth.ClientThread;
 
@@ -83,7 +84,9 @@ public class DeviceListForm extends List implements CommandListener
             setCommandListener(this);
         }
         catch (Exception e)
-        {}
+        {
+            Debug.dbg(e, 9, this);
+        }
     }
     
     /**
@@ -106,13 +109,15 @@ public class DeviceListForm extends List implements CommandListener
                 /* can we create a new client thread for the game? */
                 if (getSelectedIndex() >= 0)
                 {
-                    ClientThread ct = new ClientThread(wcr, (RemoteDevice)devices.elementAt(getSelectedIndex()));
-                    wcr.ClientThread(ct);
+                    wcr.ClientThread(null);
+                    wcr.ClientThread(new ClientThread(wcr, (RemoteDevice)devices.elementAt(getSelectedIndex())));
                     wcr.ClientThread().start();
                 }
             }
             catch(BluetoothStateException e)
-            {}
+            {
+                Debug.dbg(e, 9, this);
+            }
         }
     }
 }

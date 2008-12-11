@@ -29,6 +29,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.List;
+import net.sf.wcr.Debug;
 import net.sf.wcr.WCR;
 import net.sf.wcr.bluetooth.ServerThread;
 import net.sf.wcr.core.GameMode;
@@ -90,8 +91,8 @@ public class SelectColorForm extends List implements CommandListener
 
                     if (wcr.gameMode().equals(GameMode.CREATE_GAME))
                     {
-                        ServerThread st = new ServerThread(wcr, gameColor);
-                        wcr.ServerThread(st);
+                        wcr.ServerThread(null);
+                        wcr.ServerThread(new ServerThread(wcr, gameColor));
                         wcr.ServerThread().start();
                     }
                     else if (wcr.gameMode().equals(GameMode.SINGLE_PLAYER))
@@ -102,6 +103,8 @@ public class SelectColorForm extends List implements CommandListener
             }
         }
         catch(Exception e)
-        {}
+        {
+            Debug.dbg(e, 9, this);
+        }
     }
 }
